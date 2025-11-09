@@ -1,0 +1,43 @@
+name: Matrix Build Demo (a20bf30)
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Matrix - ${{ matrix.os }} / Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [16, 18, 20]
+      fail-fast: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: matrix-a20bf30
+        run: echo "Building for OS=${{ matrix.os }} and Node=${{ matrix.node }}"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Generate build artifact
+        run: |
+          echo "Build artifact for OS=${{ matrix.os }}, Node=${{ matrix.node }}" > build-info.txt
+          echo "Timestamp: $(date)" >> build-info.txt
+          echo "Node version:" >> build-info.txt
+          node -v >> build-info.txt
+          echo "System information:" >> build-info.txt
+          uname -a || systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-a20bf30-${{ matrix.os }}-node${{ matrix.node }}
+          path: build-info.txt
